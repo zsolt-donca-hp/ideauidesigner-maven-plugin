@@ -3,7 +3,7 @@
   <groupId>com.hp</groupId>
   <artifactId>ideauidesigner-maven-plugin</artifactId>
   <packaging>maven-plugin</packaging>
-  <version>1.0-beta-2-SNAPSHOT</version>
+  <version>1.0-beta-3</version>
   <name>Maven IDEA UI Designer Plugin</name>
   <description>A plugin that wraps around Intellij ant tasks to build your GUI forms into your builds (http://www.jetbrains.com/idea/features/gui_builder.html#link16) with support for loading a Jide license when transforming .form files to bytecode.</description>
   <inceptionYear>2006</inceptionYear>
