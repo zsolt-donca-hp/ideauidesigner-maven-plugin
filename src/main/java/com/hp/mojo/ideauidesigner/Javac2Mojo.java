@@ -1,4 +1,4 @@
-package org.codehaus.mojo.ideauidesigner;
+package com.hp.mojo.ideauidesigner;
 
 /*
  * Copyright 2001-2006 The Apache Software Foundation.
@@ -16,6 +16,7 @@ package org.codehaus.mojo.ideauidesigner;
  * limitations under the License.
  */
 
+import java.lang.reflect.Method;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.project.MavenProject;
@@ -25,8 +26,6 @@ import org.apache.tools.ant.Project;
 import org.apache.tools.ant.BuildListener;
 import org.apache.tools.ant.BuildEvent;
 import org.apache.tools.ant.types.Path;
-
-import com.intellij.uiDesigner.ant.Javac2;
 
 import java.io.File;
 import java.util.Iterator;
@@ -120,6 +119,34 @@ public class Javac2Mojo
      */
     private boolean verbose;
 
+    /**
+     * Wether you want to load a Jide license.
+     *
+     * @parameter expression="${verbose}" default-value="false"
+     */
+    private boolean loadJideLicense;
+
+    /**
+     * The company name of the Jide license.
+     *
+     * @parameter expression="${verbose}" default-value="false"
+     */
+    private String companyName;
+
+    /**
+     * The product name of the Jide license.
+     *
+     * @parameter expression="${verbose}" default-value="false"
+     */
+    private String productName;
+
+    /**
+     * The license key of the Jide license.
+     *
+     * @parameter expression="${verbose}" default-value="false"
+     */
+    private String licenseKey;
+
     public void execute()
         throws MojoExecutionException
     {
@@ -132,7 +159,13 @@ public class Javac2Mojo
 
         antProject.addBuildListener(new DebugAntBuildListener());
 
-        final Javac2 task = new Javac2();
+        final Javac2 task = new Javac2() {
+            protected ClassLoader buildClasspathClassLoader() {
+                ClassLoader classLoader = super.buildClasspathClassLoader();
+                Javac2Mojo.this.loadJideLicense(classLoader);
+                return classLoader;
+            }
+        };
 
         task.setProject( antProject );
 
@@ -181,6 +214,23 @@ public class Javac2Mojo
         catch ( BuildException e )
         {
             throw new MojoExecutionException( "command execution failed", e );
+        }
+    }
+
+    private void loadJideLicense(ClassLoader classLoader) {
+        if (loadJideLicense) {
+            if ((companyName == null || productName == null || licenseKey == null)) {
+                getLog().error("Cannot load the Jide license because it's not specified.");
+            } else {
+                try {
+                    // com.jidesoft.utils.Lm.verifyLicense(companyName, productName, licenseKey);
+                    Class clazz = classLoader.loadClass("com.jidesoft.utils.Lm");
+                    Method verifyLicense = clazz.getMethod("verifyLicense", new Class[]{String.class, String.class, String.class});
+                    verifyLicense.invoke(null, new Object[]{companyName, productName, licenseKey});
+                } catch (Throwable e) {
+                    getLog().error(e.getMessage(), e);
+                }
+            }
         }
     }
 
