@@ -19,3 +19,4 @@ This plugin is dependent on IntelliJ's javac2.jar, asm-all.jar, and forms_rt.jar
 You can then install the plugin locally by doing:
 
     mvn install
+
